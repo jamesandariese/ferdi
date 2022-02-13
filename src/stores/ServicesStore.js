@@ -239,7 +239,7 @@ export default class ServicesStore extends Store {
             ms(`${this.stores.settings.all.app.wakeUpStrategy}s`)
         ) {
           // If service is in hibernation and the wakeup time has elapsed, wake it.
-          this._awake({ serviceId: service.id });
+          this._awake({ serviceId: service.id, automatic: true });
         }
       }
 
@@ -1043,11 +1043,51 @@ export default class ServicesStore extends Store {
     service.lastHibernated = Date.now();
   }
 
-  @action _awake({ serviceId }) {
+  @action _awake({ serviceId, automatic }) {
+    const now = Date.now();
     const service = this.one(serviceId);
-    debug(`Waking up from service hibernation for ${service.name}`);
+    const automaticTag = automatic ? " automatically " : " ";
+    debug(`Waking up${automaticTag}from service hibernation for ${service.name}`);
     service.isHibernationRequested = false;
-    service.lastUsed = Date.now();
+
+    if (automatic) {
+      // if this is an automatic wake up, use the wakeUpHibernationStrategy
+      // which bumps the lastUsed time by an appropriate amount rather than
+      // setting it to now.  Also add an optional random splay to desync the
+      // wakeups and potentially reduce load.
+      const strategy = this.stores.settings.all.app.wakeUpHibernationStrategey;
+      let timeToAdd = 0;
+      if (!strategy || strategy < 1) {
+              // if it's not a valid strategy or it's 0ish, use Date.now and
+              // restart the hibernation process as normal.
+              // simulates setting to Date.now() by calculating timeToAdd
+              // which allows the splay to take effect, too.
+              debug(`timeToAdd=${timeToAdd} indicates we should use standard hibernation strategy`);
+              timeToAdd = now - service.lastUsed;
+      } else {
+              timeToAdd = ms(`${strategy}s`);
+              debug(`timeToAdd=${timeToAdd} from strategy=${strategy}`);
+      }
+      if (this.stores.settings.all.app.wakeUpHibernationSplay) {
+	      // add splay.  Only add positive splay to allow the user to
+	      // know the minimum amount of time the app will be loaded in
+	      // case they have it set to the minimum time it takes their
+	      // app to load properly and gather notifications.
+	      // Add 10 additional seconds 50% of the time.
+	      //
+	      if (Math.random() >= .5) {
+                timeToAdd += 10_000;
+                debug(`Added splay so timeToAdd becomes ${timeToAdd/1000}s`);
+	      } else {
+	        debug("No splay added this time.");
+	      }
+      }
+      debug(`Adding ${timeToAdd/1000}s to lastUsed time`);
+      service.lastUsed += timeToAdd;
+    } else {
+      service.lastUsed = now;
+    }
+    debug(`Setting service.lastUsed to ${service.lastUsed} (${(now - service.lastUsed)/1000}s ago)`);
     service.lastHibernated = null;
   }
 
