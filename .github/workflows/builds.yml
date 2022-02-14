@@ -153,6 +153,10 @@ jobs:
         if: ${{ env.GIT_BRANCH_NAME != 'nightly' && env.GIT_BRANCH_NAME != 'release' }}
         run: npm run build -- --publish never
         shell: bash
+      - uses: actions/upload-artifact@v2
+        with:
+          name: out-mac
+          path: out/*
       - name: Build Ferdi with publish for 'nightly' branch
         if: ${{ env.GIT_BRANCH_NAME == 'nightly' }}
         run: npm run build -- --publish always -c.publish.provider=github -c.publish.owner=${{ github.repository_owner }}
@@ -250,6 +254,10 @@ jobs:
           npm run build -- --publish always -c.publish.provider=github -c.publish.owner=${{ github.repository_owner }} -c.snap.publish.provider=snapStore -c.snap.publish.repo=nightlies -c.snap.publish.channels=edge
           snapcraft logout
         shell: bash
+      - uses: actions/upload-artifact@v2
+        with:
+          name: out-linux
+          path: out/*
       - name: Build Ferdi with publish for 'release' beta branch
         if: ${{ env.GIT_BRANCH_NAME == 'release' && contains(env.PACKAGE_VERSION, 'beta') }}
         env:
@@ -327,6 +335,10 @@ jobs:
         if: ${{ env.GIT_BRANCH_NAME != 'nightly' && env.GIT_BRANCH_NAME != 'release' }}
         run: npm run build -- --publish never
         shell: bash
+      - uses: actions/upload-artifact@v2
+        with:
+          name: out-windows
+          path: out/*
       - name: Build Ferdi with publish for 'nightly' branch
         if: ${{ env.GIT_BRANCH_NAME == 'nightly' }}
         run: npm run build -- --publish always -c.publish.provider=github -c.publish.owner=${{ github.repository_owner }}
