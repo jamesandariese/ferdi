@@ -156,7 +156,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: out-mac
-          path: out/*
+          path: out/*.zip
       - name: Build Ferdi with publish for 'nightly' branch
         if: ${{ env.GIT_BRANCH_NAME == 'nightly' }}
         run: npm run build -- --publish always -c.publish.provider=github -c.publish.owner=${{ github.repository_owner }}
@@ -257,7 +257,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: out-linux
-          path: out/*
+          path: out/*.zip
       - name: Build Ferdi with publish for 'release' beta branch
         if: ${{ env.GIT_BRANCH_NAME == 'release' && contains(env.PACKAGE_VERSION, 'beta') }}
         env:
@@ -338,7 +338,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: out-windows
-          path: out/*
+          path: out/*.zip
       - name: Build Ferdi with publish for 'nightly' branch
         if: ${{ env.GIT_BRANCH_NAME == 'nightly' }}
         run: npm run build -- --publish always -c.publish.provider=github -c.publish.owner=${{ github.repository_owner }}
