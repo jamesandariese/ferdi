@@ -1072,13 +1072,13 @@ export default class ServicesStore extends Store {
 	      strategy = this.stores.settings.all.app.hibernationStrategy;
       }
       let splay = 0;
-      if (this.stores.settings.all.app.wakeUpHibernationSplay) {
-	      // Add splay.  This will keep the service awake a little longer.
+      // Add splay.  This will keep the service awake a little longer.
+      if (this.stores.settings.all.app.wakeUpHibernationSplay && Math.random() >= .5) {
 	      // Add 10 additional seconds 50% of the time.
-	      if (Math.random() >= .5) {
-                splay = 10;
-                debug('Added splay');
-	      }
+        splay = 10;
+        debug('Added splay');
+	    } else {
+        debug('skipping splay');
       }
       // wake up again in strategy + splay seconds instead of mainStrategy seconds.
       service.lastUsed = now - ms(`${(mainStrategy - (strategy + splay))}s`);
