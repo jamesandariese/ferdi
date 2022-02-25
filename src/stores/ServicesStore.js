@@ -1046,8 +1046,10 @@ export default class ServicesStore extends Store {
   @action _awake({ serviceId, automatic }) {
     const now = Date.now();
     const service = this.one(serviceId);
-    const automaticTag = automatic ? " automatically " : " ";
-    debug(`Waking up${automaticTag}from service hibernation for ${service.name}`);
+    const automaticTag = automatic ? ' automatically ' : ' ';
+    debug(
+      `Waking up${automaticTag}from service hibernation for ${service.name}`,
+    );
 
     if (automatic) {
       // if this is an automatic wake up, use the wakeUpHibernationStrategy
@@ -1058,34 +1060,41 @@ export default class ServicesStore extends Store {
       // offsetNow = now - (hibernationStrategy - wakeUpHibernationStrategy)
       //
       // if wUHS = hS = 60, offsetNow = now.  hibernation again in 60 seconds.
-      // 
+      //
       // if wUHS = 20 and hS = 60, offsetNow = now - 40.  hibernation again in
       // 20 seconds.
       //
       // possibly also include splay in wUHS before subtracting from hS.
-      // 
+      //
       const mainStrategy = this.stores.settings.all.app.hibernationStrategy;
       let strategy = this.stores.settings.all.app.wakeUpHibernationStrategy;
-      debug(`wakeUpHibernationStrategy = ${strategy}`)
-      debug(`hibernationStrategy = ${mainStrategy}`)
+      debug(`wakeUpHibernationStrategy = ${strategy}`);
+      debug(`hibernationStrategy = ${mainStrategy}`);
       if (!strategy || strategy < 1) {
-	      strategy = this.stores.settings.all.app.hibernationStrategy;
+        strategy = this.stores.settings.all.app.hibernationStrategy;
       }
       let splay = 0;
       // Add splay.  This will keep the service awake a little longer.
-      if (this.stores.settings.all.app.wakeUpHibernationSplay && Math.random() >= .5) {
-	      // Add 10 additional seconds 50% of the time.
+      if (
+        this.stores.settings.all.app.wakeUpHibernationSplay &&
+        Math.random() >= 0.5
+      ) {
+        // Add 10 additional seconds 50% of the time.
         splay = 10;
         debug('Added splay');
-	    } else {
+      } else {
         debug('skipping splay');
       }
       // wake up again in strategy + splay seconds instead of mainStrategy seconds.
-      service.lastUsed = now - ms(`${(mainStrategy - (strategy + splay))}s`);
+      service.lastUsed = now - ms(`${mainStrategy - (strategy + splay)}s`);
     } else {
       service.lastUsed = now;
     }
-    debug(`Setting service.lastUsed to ${service.lastUsed} (${(now - service.lastUsed)/1000}s ago)`);
+    debug(
+      `Setting service.lastUsed to ${service.lastUsed} (${
+        (now - service.lastUsed) / 1000
+      }s ago)`,
+    );
     service.isHibernationRequested = false;
     service.lastHibernated = null;
   }
